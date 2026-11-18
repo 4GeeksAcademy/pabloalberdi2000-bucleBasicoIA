@@ -1,0 +1,4 @@
+actor,message,tool_call,timestamp
+user,¿Qué tenemos en stock?,,2026-11-18T16:36:48.659888Z
+agent,Ejecutando herramienta get_inventory,get_inventory,2026-11-18T16:36:48.660410Z
+tool,"[{""product_id"": 1, ""name"": ""Café"", ""quantity"": 20}]",get_inventory,2026-11-18T16:36:48.660531Z

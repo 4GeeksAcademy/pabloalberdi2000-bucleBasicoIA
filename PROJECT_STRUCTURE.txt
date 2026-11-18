@@ -1,0 +1,135 @@
+🏪 PROYECTO: Sistema de Control de Inventario con Agente IA
+══════════════════════════════════════════════════════════════
+
+📁 Estructura de Directorios:
+
+pabloalberdi2000-bucleBasicoIA/
+│
+├── 📄 api/
+│   ├── __init__.py                 # Paquete Python
+│   └── app.py                      # 🚀 FastAPI app (Inventario REST)
+│       ├── Endpoints:
+│       │   ├─ GET /inventory       (Lista todos los productos)
+│       │   ├─ POST /inventory      (Añade producto)
+│       │   ├─ PATCH /inventory/{id}(Actualiza stock)
+│       │   ├─ GET /inventory/alerts(Productos con bajo stock)
+│       │   └─ GET /health          (Health check)
+│       └─ Persistencia: CSV con locks thread-safe
+│
+├── 📄 agent.py                     # 🤖 Agente en Python Puro
+│   ├─ Función: Orquesta el bucle agentico manual
+│   ├─ Tools: 4 funciones (get_inventory, add_product, etc)
+│   ├─ LLM Support: Anthropic Claude + OpenAI
+│   ├─ Function Calling: HTTP calls a la API
+│   └─ Logging: Escribe en conversation_log.csv
+│
+├── 📄 requirements.txt              # 📦 Dependencias pip
+│
+├── 📄 start-api.sh                 # 🚀 Script para arrancar API
+├── 📄 start-agent.sh               # 🚀 Script para arrancar Agente
+├── 📄 start.sh                     # 🚀 Script integrado (ambos)
+│
+├── 📄 test_system.py               # 🧪 Test suite
+│
+├── 📄 README_INVENTORY.md          # 📖 Documentación completa
+├── 📄 QUICKSTART.md                # 🚀 Inicio rápido
+└── 📄 README.md                    # (Original del proyecto)
+
+
+🔄 ARQUITECTURA DEL BUCLE AGENTICO:
+
+   ┌──────────────────────┐
+   │ 1. OBSERVAR          │ ← Input del usuario
+   └──────────┬───────────┘
+              │
+   ┌──────────▼───────────┐
+   │ 2. PENSAR            │ → LLM (con tools definitions)
+   └──────────┬───────────┘
+              │
+         ¿Tool calls?
+         ├─SÍ───────────┐
+         │              │
+   ┌─────▼────┐    ┌────▼────────────┐
+   │ 3. ACTUAR │    │ Ir al paso 6    │
+   │(HTTP call)│    │(sin herramientas)
+   └─────┬────┘    └────────────────┘
+         │
+   ┌─────▼─────────────┐
+   │ 4. ACTUALIZAR     │ → Inyectar resultados en historial
+   └─────┬─────────────┘
+         │
+   ┌─────▼─────────────┐
+   │ 5. REPETIR        │ → Llamar LLM otra vez
+   └─────┬─────────────┘
+         │
+   ┌─────▼──────────────────┐
+   │ 6. IMPRIMIR            │ → Respuesta final + Log
+   └─────┬──────────────────┘
+         │
+         └──→ ¿Continuar? → Volver a 1
+
+
+📊 DATOS PERSISTENTES:
+
+products.csv (Inventario):
+─────────────────────────────
+product_id | name           | quantity | unit
+1          | Café Arábica   | 25.5     | kg
+2          | Leche Avena    | 12       | litros
+...
+
+conversation_log.csv (Eventos):
+────────────────────────────────
+actor  | message                | tool_call       | timestamp
+user   | ¿Cuántos productos?   |                 | 2024-11-18T...
+agent  | Ejecutando: get_inv.. | get_inventory   | 2024-11-18T...
+tool   | [{"product_id": 1...}]| get_inventory   | 2024-11-18T...
+agent  | Tenemos 10 productos..| (vacío)         | 2024-11-18T...
+
+
+🛠️ TECNOLOGÍAS CLAVE:
+
+Frontend:
+  • CLI interactiva (input/print en terminal)
+
+Backend API:
+  • FastAPI (framework minimalista, rápido)
+  • CSV para persistencia (simple, sin BD)
+  • Locks para operaciones atómicas
+
+Agente IA:
+  • Python puro (sin frameworks de agentes)
+  • Anthropic Claude o OpenAI (configurable)
+  • Function calling manual (definiciones en JSON Schema)
+  • httpx para HTTP calls
+
+Logging:
+  • CSV append-only (cada evento una fila)
+  • Inmediato (sin buffer)
+
+
+🚀 INICIO RÁPIDO:
+
+Terminal 1:
+$ export ANTHROPIC_API_KEY="tu-clave"
+$ ./start-api.sh
+
+Terminal 2:
+$ export ANTHROPIC_API_KEY="tu-clave"
+$ ./start-agent.sh
+
+Luego chatea con el agente...
+
+
+✨ CARACTERÍSTICAS DESTACADAS:
+
+✅ Bucle agentico completamente manual (sin LangChain)
+✅ Dos procesos desacoplados (API + CLI Agent)
+✅ Persistencia append-only en CSV
+✅ Soporte para múltiples proveedores LLM
+✅ Function calling estructurado (JSON Schema)
+✅ Logging inmediato y persistente
+✅ Validaciones Pydantic en API
+✅ Thread-safe CSV operations
+✅ Interfaz conversacional en español
+
